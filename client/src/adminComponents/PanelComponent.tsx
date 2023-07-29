@@ -54,6 +54,7 @@ function Panel (props: PanelProps) {
     }, [dispatch, navigate]);
 
     React.useEffect(() => {
+        console.log(activeTab);
         if (props.data.data.length !== 0) {
             if (activeTab === '') {
                 const key: string = Object.keys(props.data.data)[0];
@@ -168,7 +169,7 @@ function Panel (props: PanelProps) {
                 <Nav tabs>
                     {renderNav}
                 </Nav>
-
+                
                 <div className="d-flex justify-content-end">
                     <Link to={activeTab + '/new'}>
                         <Button className="my-3" color='success'>
