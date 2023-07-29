@@ -1,0 +1,59 @@
+$my-bg: #1a1a1a;
+$my-color: #f4f4f4;
+
+body { 
+    background-color: $my-bg;
+    color: $my-color;
+}
+
+.admin {
+    height: 100%;
+
+    .admin-title {
+        padding-top: 5vh;
+        padding-bottom: 3vh;
+    }
+
+    .btn * { cursor: pointer; }
+
+    #panel {
+        .nav {
+            .nav-link {
+                color: inherit;
+                text-transform: capitalize;
+            }
+            .nav-link.active { color: black; }
+        }
+    
+        table {
+            th { text-transform: capitalize; }
+            .hidden {
+                display: none;
+                visibility: hidden;
+            }
+        }
+    }
+
+    .item {
+       .item-title,
+       .col-form-label { text-transform: capitalize; } 
+    }
+
+    .form-user {
+        width: 100vw;
+        max-width: 340px;
+        margin: auto;
+        padding: 40px;
+        border-radius: 10px;
+        box-shadow: $my-color 0px 0px 5px;
+        background-color: $my-color;
+        color: $my-bg;
+
+        .form-label { font-weight: bold; }
+        .form-label,
+        .form-control,
+        .alert { font-size: 0.8rem; }
+        .btn { font-size: 0.7rem; }
+    }
+    
+}
