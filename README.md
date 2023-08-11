@@ -1,2 +1,1 @@
-# api-cms-mern
-Content Management System API based on MERN stack.
+# Content Management System based on MERN stack.
