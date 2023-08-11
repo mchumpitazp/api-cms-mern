@@ -3,32 +3,9 @@ import { Link } from 'react-router-dom';
 import { Modal, ModalBody, Button, Alert } from 'reactstrap';
 import { baseUrl } from '../shared/baseUrl';
 
-// type ModalProps = {
-// } & (toDelete | notDelete)
-
-// type toDelete = {
-//     toDelete: true,
-//     modalState: {
-//         isOpen: boolean,
-//         itemTitle: string,
-//         itemId: string
-//     },
-//     setModalState: (modalState: any) => void
-// }
-
-// type notDelete = {
-//     toDelete: false,
-//     modalState: {
-//         isOpen: boolean,
-//         color: string,
-//         icon: string,
-//         phrase: string
-//     },
-//     setModalState: (modalState: any) => void
-// }
-
 interface ModalAlertProps {
     toDelete: boolean,
+    toAdmin: boolean,
     modalState: {
         isOpen: boolean,
         color: string,
@@ -38,6 +15,7 @@ interface ModalAlertProps {
         itemId?: string
     },
     setModalState: (modalState: any) => void,
+    tokenWorking?: (token: string) => boolean
 }
 
 function ModalAlert (props : ModalAlertProps) {
@@ -48,22 +26,21 @@ function ModalAlert (props : ModalAlertProps) {
                                        
     const deleteItem = () => {
         const token = localStorage.getItem('token');
-        if (!token) {
+        if (token && props.tokenWorking!(token)) {
+            fetch(baseUrl + '/' + props.modalState.itemTitle + '/' + props.modalState.itemId, {
+                method: 'DELETE',
+                headers: { 'x-access-token': token }
+            })
+            .then(() => window.location.reload())
+            .catch((error) => console.log(error));
+        } else {
             props.setModalState({
                 isOpen: true,
                 color: 'danger',
                 icon: 'exclamation-circle',
                 phrase: 'Opsss! There is a token problem.'
             });
-            return;
         }
-
-        fetch(baseUrl + '/' + props.modalState.itemTitle + '/' + props.modalState.itemId, {
-            method: 'DELETE',
-            headers: { 'x-access-token': token }
-        })
-        .then(() => window.location.reload())
-        .catch((error) => console.log(error))
     }
 
     return (
@@ -89,11 +66,18 @@ function ModalAlert (props : ModalAlertProps) {
                     :
                     <>
                         <h5 className={`text-${props.modalState.color} py-2`}>{props.modalState.phrase}</h5>
-                        <Link to='/admin' reloadDocument>
-                            <Button color={props.modalState.color} outline>
-                                Close
+                        {
+                            props.toAdmin ?
+                            <Link to='/admin' reloadDocument>
+                                <Button color={props.modalState.color} outline>
+                                    Close
+                                </Button> 
+                            </Link>
+                            :
+                            <Button color={props.modalState.color} outline onClick={toggle}>
+                                    Close
                             </Button> 
-                        </Link>
+                        }   
                     </>
                 }
                 

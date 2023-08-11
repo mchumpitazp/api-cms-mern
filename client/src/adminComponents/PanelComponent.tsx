@@ -1,16 +1,21 @@
 import React from 'react';
 import jwt_decode, { JwtPayload } from "jwt-decode";
 import { Link, useNavigate } from 'react-router-dom';
-import { useAppDispatch } from '../redux/hooks';
+import { useAppSelector, useAppDispatch } from '../redux/hooks';
 import { fetchData } from '../redux/ActionCreators';
 import { Container, Table, Nav, NavLink, TabContent, TabPane, Button, Spinner} from "reactstrap";
 import ModalAlert from './ModalAlertComponent';
 
 interface PanelProps {
-    data: any
+    tokenWorking: (token: string) => boolean
 }
 
 function Panel (props: PanelProps) {
+    // redux
+    const data = useAppSelector((state: { data: any; }) => state.data);
+    const dispatch = useAppDispatch();
+    
+    // hooks
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = React.useState(localStorage.getItem('activeTab') || '');
     const [toDelete, setToDelete] = React.useState(true);
@@ -22,48 +27,25 @@ function Panel (props: PanelProps) {
         itemTitle: '',
         itemId: ''
     })
-    const dispatch = useAppDispatch();
 
     React.useEffect(() => {
         const token = localStorage.getItem('token');
-        
-        if (token) {
-            const user = jwt_decode<JwtPayload>(token);
-            if (user && user.exp) {
-                const exp = user.exp * 1000;
-                const now = new Date().getTime();
-
-                if (exp > now) {
-                    dispatch(fetchData(token));
-                } else {
-                    setToDelete(false);
-                    setModalState(state => {
-                        return {
-                            ...state,
-                            isOpen: true,
-                            color: 'secondary',
-                            icon: 'clock-o',
-                            phrase: 'Session expired, please login again.'
-                    }});
-                    localStorage.removeItem('token');
-                }
-            }
-        } else {
+        if (token && props.tokenWorking(token)) 
+            dispatch(fetchData(token));
+        else 
             navigate('login');
-        }
-    }, [dispatch, navigate]);
+    }, [props, dispatch, navigate]);
 
     React.useEffect(() => {
-        console.log(activeTab);
-        if (props.data.data.length !== 0) {
+        if (data.data.length !== 0) {
             if (activeTab === '') {
-                const key: string = Object.keys(props.data.data)[0];
+                const key: string = Object.keys(data.data)[0];
                 setActiveTab(key);
             } else {
                 localStorage.setItem('activeTab', activeTab);
             }
         }
-    }, [activeTab, setActiveTab, props]);
+    }, [activeTab, setActiveTab, data.data]);
 
     const toggleModal = (itemId: string) => {
         setToDelete(true);
@@ -77,24 +59,24 @@ function Panel (props: PanelProps) {
         })
     }
     
-    if (props.data.isLoading) {
+    if (data.isLoading) {
         return (
             <div className="vh-100 d-flex justify-content-center align-items-center">
                 <Spinner>Loading ...</Spinner>
             </div>
         )
     
-    } else if (props.data.errMess) {
+    } else if (data.errMess) {
         return(
             <div className="container">
                 <div className="row">
-                    <h4>{props.data.errMess}</h4>
+                    <h4>{data.errMess}</h4>
                 </div>
             </div>
         );
     } else {
-        const keys = Object.keys(props.data.data);
-        const values = Object.values(props.data.data);
+        const keys = Object.keys(data.data);
+        const values = Object.values(data.data);
 
         const renderTable = (arrObj: any) => {
             let headers = Object.keys(arrObj[0])
@@ -183,7 +165,10 @@ function Panel (props: PanelProps) {
                 </TabContent>
                 <br/>
 
-                <ModalAlert toDelete={toDelete} modalState={modalState} setModalState={setModalState}/>
+                <ModalAlert modalState={modalState} setModalState={setModalState}
+                            toDelete={toDelete}
+                            toAdmin={true}
+                            tokenWorking={props.tokenWorking} />
             </Container>
         )
     }

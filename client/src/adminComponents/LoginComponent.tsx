@@ -2,8 +2,14 @@ import React from "react";
 import { Form, FormGroup, Input, Label, Button, Alert } from "reactstrap";
 import { baseUrl } from "../shared/baseUrl";
 import { useNavigate } from "react-router-dom";
+import ModalAlert from "./ModalAlertComponent";
 
-function Login () {
+interface LoginProps {
+    tokenExpired: boolean,
+    setTokenExpired: (expired: boolean) => void
+}
+
+function Login (props: LoginProps) {
     const navigate = useNavigate();
     const [email, setEmail] = React.useState('');
     const [password, setPassword] = React.useState('');
@@ -13,12 +19,28 @@ function Login () {
         setAlertMessage(message);
         setAlertOpen(true);
     }
+    const [modalState, setModalState] = React.useState({
+        isOpen: false,
+        color: 'secondary',
+        icon: 'clock-o',
+        phrase: 'Session expired, please login again.'
+    })
 
     React.useEffect(() => {
         if (alertOpen) {
             setTimeout(() => setAlertOpen(false), 3000);
         }
     }, [alertOpen]);
+    
+    React.useEffect(() => {
+        if (props.tokenExpired) {
+            props.setTokenExpired(false);
+            setModalState(state => { return {
+                ...state,
+                isOpen: true
+            }})
+        }
+    }, [props]);
 
     const loginUser = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -38,7 +60,8 @@ function Login () {
             } else {
                 showAlert('Incorrect email or password');
             }
-        } catch {
+        } catch (error) {
+            // console.log(error);
             showAlert('Opsss! There is a problem');
         }
         
@@ -76,6 +99,10 @@ function Login () {
                     {alertMessage}
                 </Alert>
             </div>
+
+            <ModalAlert modalState={modalState} setModalState={setModalState}
+                        toDelete={false}
+                        toAdmin={false}/>
         </div>
     );
 };
