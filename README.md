@@ -1,1 +1,1 @@
-# Content Management System based on MERN stack.
+# Content and Database Management System
